@@ -1,0 +1,112 @@
+# 	streamDevice protocol file for Agilent Model 33210A Arbitrary Waveform Generator
+# Based on ag33210a from triumf
+
+InTerminator = '\n';
+OutTerminator = '\n';
+# MaxInput = 0;
+# LockTimeout should be GT ReplyTimeout
+LockTimeout = 5000;
+ReplyTimeout = 200;
+ReadTimeout = 100;
+ExtraInput = Ignore;
+
+
+read_floatno? {
+    out "\$1"; in "%f";
+}
+
+
+read_float {
+    out "\$1?"; in "%f";
+}
+
+write_float {
+    out "\$1\_%.6f";
+#    @init{ read_float; }
+}
+
+write_floatnospace {
+    out "\$1%.6f";
+#    @init{ read_float; }
+}
+
+
+
+read_int {
+    out "\$1?"; in "%i";
+}
+
+read_intno? {
+    out "\$1"; in "%i";
+}
+
+
+
+write_int {
+    out "\$1\_%d";
+#    @init{ read_int;}
+}
+
+read_string {
+    out "\$1?"; in "%s";
+}
+
+
+read_stringno? {
+    out "\$1"; in "%s";
+}
+
+
+
+write_string {
+    out "\$1\_%s";
+#    @init{ read_string;}
+}
+
+write_stringnospace {
+    out "\$1%s";
+#    @init{ read_string;}
+}
+
+
+
+write_stringwquotes {
+    out "\$1\_\"%s\"";
+#    @init{ read_string;}
+}
+
+clear_error_queue {
+    out "errorqueue.clear()";
+}
+
+
+
+readerrorcode {
+    out "print(errorqueue.next())"; in "%f\t%*#s" 
+}
+
+
+
+readerrorstr {
+    out "print(errorqueue.next())"; in "%*f\t%#s"          
+}
+
+write_measirangsp{
+    out "\$1%{0.000001|0.000010|0.000100|0.001000|0.100000|1.5}";
+}
+
+
+write_measvrangsp {
+    out "\$1%{0.2|2.0|20.0|200.0}"; 
+}
+
+
+write_sourcevrangsp{
+    out "\$1%{0.2|2.0|20.0|200.0}";
+}
+
+write_sourceirangsp{
+    out "\$1%{0.000001|0.000010|0.000100|0.001000|0.100000|1.5}";
+}
+
+

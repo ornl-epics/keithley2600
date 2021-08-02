@@ -1,0 +1,699 @@
+#SNS supprot for 2400 series 
+#IDN
+#
+#Enable Remote or local
+record(bo, "$(P):Local") {
+  field(DESC, "When local disable all records")
+  field(ZNAM, "REMOTE")
+  field(ONAM, "LOCAL")
+  info(archive, "Monitor, 00:00:01, VAL")
+  info(autosaveFields, "VAL")
+  field(PINI, "YES")
+}
+
+
+record (calcout, "$(P):requestreadLoc"){
+  field(INPA, "$(P):Local CP NMS")
+  field(CALC, "A")
+  field(DOPT, "Use CALC")
+  field(OOPT, "Transition To Zero")
+  field(OUT, "$(P):LoadLocChanges1.PROC")                     #Proc only when output is off
+  info(archive, "Monitor, 00:00:01, VAL")
+}
+
+
+record(seq, "$(P):LoadLocChanges1") {
+  field(DESC, "Load local changes")
+  field(LNK1, "$(P):Output.VAL PP NMS")
+  field(DOL1, "$(P):OutputRead PP NMS")
+  field(DLY1, "10")                                             #wait until the values are fetched 
+  field(LNK2, "$(P):VSP.VAL PP NMS")
+  field(DOL2, "$(P):VSPR.VAL PP NMS")
+  field(DLY2, "0.3")
+  field(LNK3, "$(P):ISP.VAL PP NMS")
+  field(DOL3, "$(P):ISPR.VAL PP NMS")
+  field(DLY3, "0.3")
+  field(LNK4, "$(P):VLimit.VAL PP NMS")
+  field(DOL4, "$(P):VLimitRead.VAL PP NMS")
+  field(DLY4, "0.3")
+  field(LNK5, "$(P):ILimit.VAL PP NMS")
+  field(DOL5, "$(P):ILimitRead.VAL PP NMS")
+  field(DLY5, "0.3")
+  field(LNK6, "$(P):MeasAutoRangeI.VAL PP NMS")
+  field(DOL6, "$(P):MeasAutoRangeIR.VAL PP NMS")
+  field(DLY6, "0.3")
+  field(LNK7, "$(P):MeasAutoRangeV.VAL PP NMS")
+  field(DOL7, "$(P):MeasAutoRangeVR.VAL PP NMS")
+  field(DLY7, "0.3")
+  field(LNK8, "$(P):ResistanceMode.VAL PP NMS")
+  field(DOL8, "$(P):ResistanceModeRead.VAL PP NMS")
+  field(DLY8, "0.3")
+  info(archive, "Monitor, 00:00:01, VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+}
+
+
+record(stringin, "$(P):IDN") {
+  field(DESC, "SCPI identification string")
+  field(DTYP, "stream")
+  field(INP, "@keithley2600.proto read_string(*IDN) $(PORT)")
+  field(PINI, "YES")
+  info(archive, "Monitor, 00:00:01, VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+}
+
+
+##########################################
+##SET and Read OUTPUT TO ON
+###########################################
+record(bo, "$(P):Output") {
+   field(DESC, "Enable output")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_int(smua.source.output=) $(PORT)")
+   field(ZNAM, "Off")
+   field(ONAM, "On")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+}
+
+record(bi, "$(P):OutputRead") {
+   field(DESC, "Read Output State")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_intno?(print(smua.source.output)) $(PORT)")
+   field(ZNAM, "Off")
+   field(ONAM, "On")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(SCAN, "1 second")
+}
+#################################################
+#SET and Read V and I Levels
+#################################################
+
+record(ao, "$(P):VSP") {
+   field(DESC, "Write V Level")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_floatnospace(smua.source.levelv=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HOPR, "200")
+   field(HIHI, "200")
+   field(DRVH, "200")
+   field(DRVL, "0")
+   field(LOPR, "0")
+   field(EGU, "V")
+   field(PREC, "6")
+}
+
+
+record(ai, "$(P):VSPR") {
+   field(DESC, "Actual Voltage Level SP")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.source.levelv)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+   field(PREC, "6")
+   field(EGU, "V")
+}
+
+record(ao, "$(P):ISP") {
+   field(DESC, "Write I Level")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_floatnospace(smua.source.leveli=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HOPR, "1.5")
+   field(HIHI, "1.51")
+   field(DRVH, "1.5")
+   field(DRVL, "0")
+   field(LOPR, "0")
+   field(EGU, "A")
+   field(PREC, "6")
+}
+
+
+record(ai, "$(P):ISPR") {
+   field(DESC, "Actual Current Level SP")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.source.leveli)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+   field(PREC, "6")
+   field(EGU, "A")
+}
+
+
+
+#################################################
+#Read Source  State Set source V or I
+#################################################
+record(bi, "$(P):SourceRead") {
+   field(DESC, "Get source state")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_intno?(print(smua.source.func)) $(PORT)")
+   field(ZNAM, "DCAMPS")
+   field(ONAM, "DCVOLTS")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+}
+
+record(bo, "$(P):VSource") {
+   field(DESC, "Set source function DC volts")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_string(smua.source.func=smua.OUTPUT_DCVOLTS) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+}
+
+
+record(bo, "$(P):ISource") {
+   field(DESC, "Set source function DC amps")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_string(smua.source.func=smua.OUTPUT_DCAMPS) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+}
+
+##############################################################
+#ACTUAL VOLTAGESi, CURRENT, and Resistance
+##############################################################
+
+
+
+record(ai, "$(P):ActualV") {
+   field(DESC, "Actual Voltage Read")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.measure.v())) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+   field(PREC, "6")
+   field(EGU, "V")
+}
+
+
+record(ai, "$(P):ActualI") {
+   field(DESC, "Actual Current Read")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.measure.i())) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+   field(PREC, "6")
+   field(EGU, "A")
+}
+
+
+record(ai, "$(P):ActualR") {
+   field(DESC, "Actual Resistance Read")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.measure.r())) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+   field(PREC, "6")
+   field(EGU, "OHMS")
+}
+
+
+
+
+##################################################################
+#Limits
+##################################################################
+
+record(ao, "$(P):VLimit") {
+   field(DESC, "Write I Limit")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_floatnospace(smua.source.limitv=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HOPR, "20")
+   field(HIHI, "20")
+   field(DRVH, "20")
+   field(DRVL, "0.02")
+   field(LOPR, "0.02")
+   field(EGU, "V")
+   field(PREC, "6")
+}
+
+
+record(ai, "$(P):VLimitRead") {
+   field(DESC, "Read I Limit")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.source.limitv)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(HIHI, "20")
+   field(DISV, "1")
+   field(EGU, "V")
+   field(PREC, "6")
+   field(SCAN, "1 second")
+}
+
+
+record(ao, "$(P):ILimit") {
+   field(DESC, "Write I Limit")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_floatnospace(smua.source.limiti=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HOPR, "1.5")
+   field(HIHI, "1.51")
+   field(DRVH, "1.5")
+   field(DRVL, "0.000001")
+   field(LOPR, "0.000001") 
+   field(EGU, "A")
+   field(PREC, "6") 
+}
+
+
+record(ai, "$(P):ILimitRead") {
+   field(DESC, "Read I Limit")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.source.limiti)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(HIHI, "1.5")
+   field(DISV, "1")
+   field(EGU, "A")
+   field(PREC, "6")
+   field(SCAN, "1 second")
+}
+
+#######################################################################
+#RANGES
+#######################################################################
+
+record(bo, "$(P):MeasAutoRangeI") {
+   field(DESC, "Measure Auto Range I")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_int(smua.measure.autorangei=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(ZNAM, "Manual")
+   field(ONAM, "Auto")
+   info(autosaveFields, "VAL")
+}
+
+record(bi, "$(P):MeasAutoRangeIR") {
+   field(DESC, "Measure Auto Range I Read")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_intno?(print(smua.measure.autorangei)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(ZNAM, "Manual")
+   field(ONAM, "AUTO")
+   field(SCAN, "1 second")
+}
+
+
+record(mbbo, "$(P):MeasRangISP") {
+  field(DESC, "Write Meas. Range I SP")
+  field(DTYP, "stream")
+  field(ZRST, "0.000001")
+  field(ZRVL, "0")
+  field(ONST, "0.000010")
+  field(ONVL, "1")
+  field(TWST, "0.000100")
+  field(TWVL, "2")
+  field(THST, "0.001000")
+  field(THVL, "3")
+  field(FRST, "0.100000")
+  field(FRVL, "4")
+  field(FVST, "1.5")
+  field(FVVL, "5")
+  field(OUT, "@keithley2600.proto write_measirangsp(smua.measure.rangei=) $(PORT)")
+  info(archive, "Monitor, 00:00:01, VAL")
+  info(autosaveFields, "VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+}
+
+
+
+
+
+
+record(ai, "$(P):MeasRangISPR") {
+   field(DESC, "Read Meas. Range I SP")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.measure.rangei)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(HIHI, "1.5")
+   field(DISV, "1")
+   field(EGU, "A")
+   field(PREC, "6")
+   field(SCAN, "1 second")
+}
+
+
+record(mbbo, "$(P):SourceRangISP") {
+  field(DESC, "Write Source Range I SP")
+  field(DTYP, "stream")
+  field(ZRST, "0.000001")
+  field(ZRVL, "0")
+  field(ONST, "0.000010")
+  field(ONVL, "1")
+  field(TWST, "0.000100")
+  field(TWVL, "2")
+  field(THST, "0.001000")
+  field(THVL, "3")
+  field(FRST, "0.100000")
+  field(FRVL, "4")
+  field(FVST, "1.5")
+  field(FVVL, "5")
+  field(OUT, "@keithley2600.proto write_sourceirangsp(smua.source.rangei=) $(PORT)")
+  info(archive, "Monitor, 00:00:01, VAL")
+  info(autosaveFields, "VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+}
+
+
+
+
+record(ai, "$(P):SourceRangISPR") {
+   field(DESC, "Read Source Range I SP")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.source.rangei)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(HIHI, "1.5")
+   field(DISV, "1")
+   field(EGU, "A")
+   field(PREC, "6")
+   field(SCAN, "1 second")
+}
+
+
+
+record(bo, "$(P):MeasAutoRangeV") {
+   field(DESC, "Measure Auto Range V")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_int(smua.measure.autorangev=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(ZNAM, "Manual")
+   field(ONAM, "Auto")
+   info(autosaveFields, "VAL")
+}
+
+record(bi, "$(P):MeasAutoRangeVR") {
+   field(DESC, "Measure Auto Range V Read")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_intno?(print(smua.measure.autorangev)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(ZNAM, "Manual")
+   field(ONAM, "AUTO")
+   field(SCAN, "1 second")
+}
+
+record(mbbo, "$(P):MeasRangVSP") {
+  field(DESC, "Write Meas. Range V SP")
+  field(DTYP, "stream")
+  field(ZRST, "0.2")
+  field(ZRVL, "0")
+  field(ONST, "2.0")
+  field(ONVL, "1")
+  field(TWST, "20.0")
+  field(TWVL, "2")
+  field(THST, "200.0")
+  field(THVL, "3")
+  field(OUT, "@keithley2600.proto write_measvrangsp(smua.measure.rangev=) $(PORT)")
+  info(archive, "Monitor, 00:00:01, VAL")
+  info(autosaveFields, "VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+}
+
+
+record(ai, "$(P):MeasRangVSPR") {
+   field(DESC, "Read Meas. Range V SP")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.measure.rangev)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(HIHI, "1.5")
+   field(DISV, "1")
+   field(EGU, "V")
+   field(PREC, "6")
+   field(SCAN, "1 second")
+}
+
+
+record(mbbo, "$(P):SourceRangVSP") {
+  field(DESC, "Write Source Range V SP")
+  field(DTYP, "stream")
+  field(ZRST, "0.2")
+  field(ZRVL, "0")
+  field(ONST, "2.0")
+  field(ONVL, "1")
+  field(TWST, "20.0")
+  field(TWVL, "2")
+  field(THST, "200.0")
+  field(THVL, "3")
+  field(OUT, "@keithley2600.proto write_sourcevrangsp(smua.source.rangev=) $(PORT)")
+  info(archive, "Monitor, 00:00:01, VAL")
+  info(autosaveFields, "VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+}
+
+
+
+
+record(ai, "$(P):SourceRangVSPR") {
+   field(DESC, "Read Source Range V SP")
+   field(DTYP, "stream")
+   field(INP, "@keithley2600.proto read_floatno?(print(smua.source.rangev)) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(HIHI, "200")
+   field(DISV, "1")
+   field(EGU, "V")
+   field(PREC, "6")
+   field(SCAN, "1 second")
+}
+
+
+
+######################################################################
+#Resistance Mode and status
+######################################################################
+record(bo, "$(P):ResistanceMode") {
+   field(DESC, "2-wire 4-wire resistance mode")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_int(smua.sense=) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(ZNAM, "2-wire")
+   field(ONAM, "4-wire")
+}
+
+record(bi, "$(P):ResistanceModeRead") {
+   field(DESC, "2-wire 4-wire state")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto read_intno?(print(smua.sense)) $(PORT)")
+   field(ZNAM, "2-wire")
+   field(ONAM, "4-wire")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+}
+
+
+
+#######################################################################
+#Error handling and states
+#######################################################################
+record(ai, "$(P):ErrorCode") {
+   field(DESC, "Error Code")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto readerrorcode() $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+}
+
+
+record(calc, "$(P):ErrorCodeBool"){
+   field(DESC, "Error Code Boolean")
+   field(INPA, "$(P):ErrorCode CP NMS")
+   field(CALC, "A!=0?1:0")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+}
+
+record(stringin, "$(P):ErrorString") {
+   field(DESC, "Error Code string")
+   field(DTYP, "stream")
+   field(SCAN, "1 second")
+   field(INP, "@keithley2600.proto readerrorstr() $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+}
+
+
+record (bo, "$(P):ClearErrorsRSTBool") {
+   field(DESC, "Clear Errors and RST Steps")
+   field(OUT, "$(P):ClearErrorsRST PP NMS")
+   field(HIGH, "0.5")
+}
+
+record(seq, "$(P):ClearErrorsRST") {
+   field(DESC, "Clear Errors and RST Steps")
+   field(DO1, "1")
+   field(LNK1, "$(P):CLS PP NMS")
+   field(DLY1, "0.2")
+   field(DO2, "1")
+   field(LNK2, "$(P):RST PP NMS")
+   field(DLY2, "0.2")
+   field(DO3, "1")
+   field(LNK3, "$(P):ClearErrorQueue PP NMS")
+   field(DLY3, "0.2")
+   info(archive, "Monitor, 00:00:01, VAL")
+
+}
+
+
+record(bo, "$(P):ClearErrorQueue") {
+   field(DESC, "Clear Error Queue")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_string(errorqueue.clear()) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+}
+
+
+record(bo, "$(P):RST") {
+  field(DESC, "SCPI Reset")
+  field(DTYP, "stream")
+  field(OUT, "@keithley2600.proto write_int(*RST) $(PORT)")
+  field(HIGH, "1")
+  info(archive, "Monitor, 00:00:01, VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+
+}
+
+
+record(bo, "$(P):CLS") {
+  field(DESC, "SCPI Clear status")
+  field(DTYP, "stream")
+  field(OUT, "@keithley2600.proto write_int(*CLS) $(PORT)")
+  field(HIGH, "1")
+  info(archive, "Monitor, 00:00:01, VAL")
+  field(SDIS, "$(P):Local NPP MS")
+  field(DISS, "INVALID")
+  field(DISV, "1")
+
+}
+
+record(bo, "$(P):Reset") {
+   field(DESC, "Reset Keithley2600")
+   field(DTYP, "stream")
+   field(OUT, "@keithley2600.proto write_string(reset()) $(PORT)")
+   info(archive, "Monitor, 00:00:01, VAL")
+   info(autosaveFields, "VAL")
+   field(SDIS, "$(P):Local NPP MS")
+   field(DISS, "INVALID")
+   field(DISV, "1")
+   field(HIGH, "1")
+}
+ 
